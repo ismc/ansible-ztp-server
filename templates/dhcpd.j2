@@ -1,0 +1,50 @@
+ddns-update-style interim;
+log-facility local6;
+
+allow booting;
+allow bootp;
+
+ignore client-updates;
+set vendorclass = option vendor-class-identifier;
+
+option pxe-system-type code 93 = unsigned integer 16;
+
+class "pxeclients" {
+  match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
+  if option pxe-system-type = 00:02 {
+    filename "ia64/elilo.efi";
+  } else if option pxe-system-type = 00:06 {
+    filename "grub/grub-x86.efi";
+  } else if option pxe-system-type = 00:07 {
+    filename "grub/grub-x86_64.efi";
+  } else {
+    filename "pxelinux.0";
+  }
+}
+class "cisco-ztp" {
+  match if option dhcp-client-identifier ~= "^cisco";
+    vendor-option-space cisco;
+}
+
+
+{% for item in ztp_networks %}
+subnet {{ item.cidr | ipaddr('network') }} netmask {{ item.cidr | ipaddr('netmask') }} {
+  option routers             {{ item.router }};
+  option domain-name-servers {{ item.dns | join(",") }};
+  option subnet-mask         {{ item.cidr | ipaddr('netmask') }};
+  default-lease-time         21600;
+  max-lease-time             43200;
+  next-server                {{ item.tftp_server }};
+}
+{% endfor %}
+
+group {
+{% for item in ztp_clients %}
+  host {{ item.hostname }}.{{ item.domain }} {
+    hardware ethernet {{ item.mac }};
+    fixed-address {{ item.cidr | ipaddr('address') }};
+    option host-name "{{ item.hostname }}.{{ item.domain }}";
+    filename "configs/{{ item.hostname }}.{{ item.domain }}";
+  }
+{% endfor %}
+}

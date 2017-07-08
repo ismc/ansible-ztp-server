@@ -1,0 +1,11 @@
+---
+disable_selinux: 1
+ztp_config_root: /var/lib/tftpboot/configs
+ztp_packages:
+  - dhcp
+  - xinetd
+  - tftp-server
+
+ztp_services:
+  - dhcpd
+  - xinetd

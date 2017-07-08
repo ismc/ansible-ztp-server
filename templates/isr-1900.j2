@@ -1,0 +1,75 @@
+
+!
+! Last configuration change at 16:48:38 UTC Sat Jul 8 2017
+version 15.1
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname {{ client_item.hostname }}
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$s35z$t2EbA/dhdEuX1V1xpeNYO.
+!
+aaa new-model
+!
+aaa authentication login default local
+aaa authorization exec default local
+aaa authorization console
+!
+aaa session-id common
+!
+no ipv6 cef
+ip source-route
+ip cef
+!
+ip domain name {{ client_item.domain }}
+multilink bundle-name authenticated
+!
+crypto pki token default removal timeout 0
+!
+vtp mode transparent
+username admin privilege 15 secret 4 bHt3kogM7HOTmCliLIaflZAsSCHttY1vFWKZYX7kI5I
+!
+ip ssh version 2
+!
+interface GigabitEthernet0/0
+ ip address {{ client_item.cidr | ipaddr('address') }} {{ client_item.cidr | ipaddr('netmask') }}
+ duplex auto
+ speed auto
+ no mop enabled
+!
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+dialer-list 1 protocol ip permit
+!
+!
+control-plane
+!
+!
+!
+line vty 0 4
+ transport input all
+!
+kron occurrence crypto_key in 1 oneshot
+policy-list crypto_key
+!
+kron policy-list crypto_key
+cli event manager run crypto_key
+!
+event manager applet crypto_key
+event none sync yes
+action 1 cli command "enable"
+action 2 cli command "config t"
+action 3 cli command "crypto key generate rsa modulus 2048"
+action 4 cli command "exit"
+action 5 cli command "write mem"
+action 6 cli command "end"
+!
+end
