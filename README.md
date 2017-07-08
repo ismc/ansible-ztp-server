@@ -1,38 +1,43 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+This role will setup a server to be a Zero-Touch Provisioning Server for network devices
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Currenlty, this role requires RHEL/CentOS.  It will install the EPEL repository and all required dependancies
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+
+| Name              | Default Value       | Description          |
+|-------------------|---------------------|----------------------|
+| `ztp_networks` | `no` | A list of dictionaries containing the netowrk from which clients will boot |
+| `ztp_clients` | `no`  | A list of dictionaries describing the clients |
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+- hosts: ztp_servers
+  become: yes
+  vars:
+    ztp_networks:
+      - { cidr: 192.168.12.0/24, router: 192.168.12.1, dns: [8.8.8.8, 8.8.4.4], tftp_server: 192.168.12.10 }
+    ztp_clients:
+      - { hostname: isr, domain: home.bus8.io, cidr: 192.168.12.30/24, mac: "ac:f2:c5:19:37:20", config_template: isr-1900.j2 }
+  roles:
+    - { role: ztp-server }
 
 License
 -------
 
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+MIT
