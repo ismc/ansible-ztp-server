@@ -29,9 +29,16 @@ class "cisco-ztp" {
 
 {% for item in ztp_networks %}
 subnet {{ item.cidr | ipaddr('network') }} netmask {{ item.cidr | ipaddr('netmask') }} {
+{% if item.router is defined %}
   option routers             {{ item.router }};
-  option domain-name-servers {{ item.dns | join(",") }};
+{% endif %}
+{% if item.dns_servers is defined %}
+  option domain-name-servers {{ item.dns_servers | join(",") }};
+{% endif %}
   option subnet-mask         {{ item.cidr | ipaddr('netmask') }};
+{% if item.range is defined %}
+  range                      {{ item.range }};
+{% endif %}
   default-lease-time         21600;
   max-lease-time             43200;
   next-server                {{ item.tftp_server }};

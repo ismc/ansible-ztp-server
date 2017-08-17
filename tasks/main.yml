@@ -1,14 +1,16 @@
-- name: disable selinux
-  selinux: state=disabled
-  become: True
-  when: disable_selinux
-
-- name: install epel
-  yum: name=epel-release state=installed
-  become: True
+#- name: disable selinux
+#  selinux: state=disabled
+#  become: True
+#  when: disable_selinux
+#
+#- name: install epel
+#  yum: name=epel-release state=installed
+#  become: True
 
 - name: install ztp packages
-  yum: name={{ item }} state=installed
+  package:
+    name: "{{ item }}"
+    state: installed
   with_items: "{{ ztp_packages }}"
   become: True
 
@@ -20,6 +22,11 @@
   template: src=tftp.j2 dest=/etc/xinetd.d/tftp backup=yes
   become: True
 
+- name: Creates TFTP config directory
+  file:
+    path: "{{ ztp_config_root}}"
+    state: directory
+
 - name: create the config files
   template: src={{ client_item.config_template }} dest={{ ztp_config_root}}/{{ client_item.hostname }}.{{ client_item.domain }}
   with_items: "{{ ztp_clients | default([]) }}"
@@ -29,6 +36,7 @@
 - name: allow TFTP through firewall
   firewalld:
     service: tftp
+    immediate: true
     permanent: true
     state: enabled
   become: True
@@ -36,6 +44,7 @@
 - name: allow DHCP through firewall
   firewalld:
     service: dhcp
+    immediate: true
     permanent: true
     state: enabled
   become: True
