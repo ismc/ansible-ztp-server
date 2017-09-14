@@ -45,21 +45,23 @@
   loop_control:
     loop_var: client_item
 
-#- name: allow TFTP through firewall
-#  firewalld:
-#    service: tftp
-#    immediate: true
-#    permanent: true
-#    state: enabled
-#  become: True
-#
-#- name: allow DHCP through firewall
-#  firewalld:
-#    service: dhcp
-#    immediate: true
-#    permanent: true
-#    state: enabled
-#  become: True
+- block:
+  - name: allow TFTP through firewall
+    firewalld:
+      service: tftp
+      immediate: true
+      permanent: true
+      state: enabled
+    become: True
+
+  - name: allow DHCP through firewall
+    firewalld:
+      service: dhcp
+      immediate: true
+      permanent: true
+      state: enabled
+    become: True
+  when: ansible_os_family == 'Redhat'
 
 - name: restart services
   service:
