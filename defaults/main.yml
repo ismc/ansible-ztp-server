@@ -1,11 +1,6 @@
 ---
 disable_selinux: 1
-ztp_config_root: /var/lib/tftpboot/configs
-ztp_packages:
-  - dhcp
-  - xinetd
-  - tftp-server
+ztp_restart_services: yes
+ztp_config_root: /srv/tftp/configs
 
-ztp_services:
-  - dhcpd
-  - xinetd
+ztp_dhcpd_interfaces: "{{ ansible_interfaces[0] }}"

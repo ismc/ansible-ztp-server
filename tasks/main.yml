@@ -7,6 +7,13 @@
 #  yum: name=epel-release state=installed
 #  become: True
 
+- name: Load a variable file based on the OS type, or a default if not found. Using free-form to specify the file.
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
+    - "default.yml"
+
 - name: install ztp packages
   package:
     name: "{{ item }}"
@@ -22,6 +29,11 @@
   template: src=tftp.j2 dest=/etc/xinetd.d/tftp backup=yes
   become: True
 
+- lineinfile:
+    path: /etc/default/isc-dhcp-server
+    regexp: "^INTERFACESv4="
+    line: "INTERFACESv4=\"{{ ztp_dhcpd_interfaces }}\""
+
 - name: Creates TFTP config directory
   file:
     path: "{{ ztp_config_root}}"
@@ -33,25 +45,28 @@
   loop_control:
     loop_var: client_item
 
-- name: allow TFTP through firewall
-  firewalld:
-    service: tftp
-    immediate: true
-    permanent: true
-    state: enabled
-  become: True
-
-- name: allow DHCP through firewall
-  firewalld:
-    service: dhcp
-    immediate: true
-    permanent: true
-    state: enabled
-  become: True
+#- name: allow TFTP through firewall
+#  firewalld:
+#    service: tftp
+#    immediate: true
+#    permanent: true
+#    state: enabled
+#  become: True
+#
+#- name: allow DHCP through firewall
+#  firewalld:
+#    service: dhcp
+#    immediate: true
+#    permanent: true
+#    state: enabled
+#  become: True
 
 - name: restart services
-  service: name={{ item }} state=restarted enabled=yes
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
   with_items: "{{ ztp_services }}"
   become: True
-
+  when: ztp_restart_services | bool
 ...

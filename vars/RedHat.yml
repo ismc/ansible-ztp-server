@@ -1,0 +1,8 @@
+ztp_packages:
+  - dhcp
+  - xinetd
+  - tftp-server
+
+ztp_services:
+  - dhcpd
+  - xinetd

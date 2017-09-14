@@ -1,0 +1,5 @@
+hostname {{ client_item.hostname }}
+ip domain name {{ client_item.domain }}
+interface GigabitEthernet0/0
+ ip address {{ client_item.cidr | ipaddr('address') }} {{ client_item.cidr | ipaddr('netmask') }}
+end

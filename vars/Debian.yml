@@ -1,0 +1,7 @@
+ztp_packages:
+  - isc-dhcp-server
+  - tftp-server
+
+ztp_services:
+  - isc-dhcp-server
+  - tftpd-hpa
